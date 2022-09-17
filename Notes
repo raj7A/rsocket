@@ -1,0 +1,16 @@
+https://www.ibm.com/docs/en/wip-mg/5.0.0?topic=protocols-websockets
+https://www.cs.dartmouth.edu/~campbell/cs60/socketprogramming.html
+https://www.manageengine.com/network-monitoring/network-protocols.html
+
+Tcp ->
+       https://www.ibm.com/docs/en/aix/7.1?topic=protocol-tcpip-protocols
+       https://rsocket.io/about/protocol
+       https://github.com/zhwxp/spring-boot-tcp-server-sample
+	   https://projectreactor.io/docs/netty/snapshot/reference/index.html#_writing_data_4
+       https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/messaging/tcp/reactor/ReactorNettyTcpClient.html
+             (https://www.programcreek.com/java-api-examples/?api=reactor.netty.tcp.TcpClient)
+
+RSocket ->
+       https://docs.spring.io/spring-framework/docs/current/reference/html/rsocket.html
+       https://github.com/rsocket
+       https://github.com/joshlong/rsocket-revolution

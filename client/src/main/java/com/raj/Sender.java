@@ -7,20 +7,34 @@ import reactor.core.publisher.Mono;
 @Component
 public class Sender {
 
-    RSocketRequester rSocketRequester;
+    RSocketRequester rSocketRequester1;
+    RSocketRequester rSocketRequester2;
 
-    private Sender(RSocketRequester rSocketRequester) {
-        this.rSocketRequester = rSocketRequester;
+    private Sender(RSocketRequester rSocketRequester1, RSocketRequester rSocketRequester2) {
+        this.rSocketRequester1 = rSocketRequester1;
+        this.rSocketRequester2 = rSocketRequester2;
     }
 
     public Mono<Void> fireAndForget(String route, Customer message) {
-        return rSocketRequester.route(route)
+        return rSocketRequester1.route(route)
+                .data(message)
+                .send();
+    }
+
+    public Mono<Void> fireAndForgetOnConnection1(String route, Customer message) {
+        return rSocketRequester1.route(route)
+                .data(message)
+                .send();
+    }
+
+    public Mono<Void> fireAndForgetOnConnection2(String route, Customer message) {
+        return rSocketRequester2.route(route)
                 .data(message)
                 .send();
     }
 
     public Mono<String> send(String route, String message) {
-        return rSocketRequester.route(route)
+        return rSocketRequester1.route(route)
                 .data(message)
                 .retrieveMono(String.class);
     }

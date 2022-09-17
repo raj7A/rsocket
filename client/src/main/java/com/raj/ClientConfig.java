@@ -12,15 +12,22 @@ import java.time.Duration;
 @Configuration
 public class ClientConfig {
 
-    @Bean
-    protected RSocketRequester rSocketRequester(RSocketStrategies rSocketStrategies,
+    @Bean("rSocketRequester1")
+    protected RSocketRequester rSocketRequester1(RSocketStrategies rSocketStrategies,
             RSocketRequester.Builder builder) {
-//        rSocketStrategies.encoders().stream().forEach(enc ->{
-//            System.out.println(enc.toString());
-//            enc.getEncodableMimeTypes().stream().forEach(mt -> {
-//                System.out.println(mt.toString());
-//            });
-//        });
+
+        return builder
+                //.dataMimeType(MimeType.valueOf("application/cbor"))
+                //.metadataMimeType(MimeType.valueOf("application/cbor"))
+                .rsocketStrategies(rSocketStrategies)
+                .rsocketConnector(connector ->
+                        connector.reconnect(Retry.fixedDelay(20, Duration.ofSeconds(10))))
+                .tcp("localhost", 9090);
+    }
+
+    @Bean("rSocketRequester2")
+    protected RSocketRequester rSocketRequester2(RSocketStrategies rSocketStrategies,
+            RSocketRequester.Builder builder) {
 
         return builder
                 //.dataMimeType(MimeType.valueOf("application/cbor"))
