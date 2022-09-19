@@ -1,5 +1,6 @@
 package com.raj;
 
+import io.rsocket.core.RSocketClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.codec.cbor.Jackson2CborEncoder;
@@ -21,7 +22,7 @@ public class ClientConfig {
                 //.metadataMimeType(MimeType.valueOf("application/cbor"))
                 .rsocketStrategies(rSocketStrategies)
                 .rsocketConnector(connector ->
-                        connector.reconnect(Retry.fixedDelay(20, Duration.ofSeconds(10))))
+                        connector.reconnect(Retry.fixedDelay(2, Duration.ofSeconds(10))))
                 .tcp("localhost", 9090);
     }
 
@@ -36,6 +37,19 @@ public class ClientConfig {
                 .rsocketConnector(connector ->
                         connector.reconnect(Retry.fixedDelay(20, Duration.ofSeconds(10))))
                 .tcp("localhost", 9090);
+    }
+
+    @Bean("rSocketClient")
+    protected RSocketClient rSocketClient(RSocketStrategies rSocketStrategies,
+                                          RSocketRequester.Builder builder) {
+
+        return builder
+                .rsocketStrategies(rSocketStrategies)
+                .rsocketConnector(connector ->
+                        connector.reconnect(Retry.fixedDelay(2, Duration.ofSeconds(10))))
+                .setupRoute("vz.customer")
+                .tcp("localhost", 9090)
+                .rsocketClient();
     }
 
     //@Bean

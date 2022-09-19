@@ -1,8 +1,7 @@
-https://www.ibm.com/docs/en/wip-mg/5.0.0?topic=protocols-websockets
-https://www.cs.dartmouth.edu/~campbell/cs60/socketprogramming.html
 https://www.manageengine.com/network-monitoring/network-protocols.html
 
 Tcp ->
+       https://learnk8s.io/kubernetes-long-lived-connections
        https://www.ibm.com/docs/en/aix/7.1?topic=protocol-tcpip-protocols
        https://rsocket.io/about/protocol
        https://github.com/zhwxp/spring-boot-tcp-server-sample
@@ -14,3 +13,4 @@ RSocket ->
        https://docs.spring.io/spring-framework/docs/current/reference/html/rsocket.html
        https://github.com/rsocket
        https://github.com/joshlong/rsocket-revolution
+       https://learnk8s.io/kubernetes-long-lived-connections

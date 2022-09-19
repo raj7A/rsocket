@@ -7,29 +7,24 @@ import reactor.core.publisher.Mono;
 @Controller
 public class ServerController {
 
-    @MessageMapping("vz")
-    public void receive(Mono<String> data) {
-        data.map(value -> {
-            System.out.println(value);
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            return Mono.empty();
+    private final ServerService serverService;
+    public ServerController(ServerService serverService) {
+        this.serverService = serverService;
+    }
+
+    @MessageMapping("fnf.customer")
+    public void receive(Mono<Customer> customerMono) {
+        customerMono.flatMap(customer -> {
+            System.out.println("Data received by fnf : " + customer);
+            return serverService.send(customer);
         }).subscribe();
     }
 
-    @MessageMapping("vz.customer")
-    public void receiveCustomer(Mono<Customer> data) {
-        data.map(value -> {
-            System.out.println(value.toString());
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            return Mono.empty();
-        }).subscribe();
+    @MessageMapping("send.customer")
+    public Mono<String> receiveAndSave(Mono<Customer> customerMono) {
+        return customerMono.flatMap(customer -> {
+            System.out.println("Data received by send : " + customer);
+            return serverService.send(customer);
+        });
     }
 }

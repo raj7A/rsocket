@@ -17,8 +17,12 @@ public class Sender {
 
     public Mono<Void> fireAndForget(String route, Customer message) {
         return rSocketRequester1.route(route)
-                .data(message)
+                .data(getMessage(message))
                 .send();
+    }
+
+    private Customer getMessage(Customer message) {
+        return message;
     }
 
     public Mono<Void> fireAndForgetOnConnection1(String route, Customer message) {
@@ -33,9 +37,13 @@ public class Sender {
                 .send();
     }
 
-    public Mono<String> send(String route, String message) {
+    public Mono<String> send(String route, Customer customer) {
         return rSocketRequester1.route(route)
-                .data(message)
-                .retrieveMono(String.class);
+                .data(customer)
+                .retrieveMono(String.class)
+                .map(response -> {
+                    System.out.println(response);
+                    return response;
+                });
     }
 }

@@ -1,23 +1,28 @@
 package com.raj;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 public class Customer {
-    private final String customerId;
+    private final Integer customerId;
     private final String firstName;
     private final String lastName;
-    private final List<Address> addresses = new ArrayList<>();
+    private final List<Address> addresses;
 
     @Data
-    @AllArgsConstructor
-    public static class Address {
+    //@AllArgsConstructor
+    //@NoArgsConstructor
+    static class Address {
         private final String id;
+
+        @JsonCreator
+        public Address(String id) {
+            this.id = id;
+        }
     }
 }
