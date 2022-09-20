@@ -16,7 +16,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
 
 @SpringBootTest
 class SenderTest {
@@ -83,8 +82,31 @@ class SenderTest {
     }
 
     @Test
+    void fireAndForgetTheCustomerDataContinuouslyInParallelMode() {
+        Flux.range(1, 100000)
+                .parallel(2)
+                .runOn(Schedulers.parallel())
+                .map(counter -> {
+                    var customer = new Customer(counter, "raj", "raj", addresses);
+                    //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
+                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
+                    System.out.println(Thread.currentThread().getName() + " : Data sent : " + customer);
+                    return counter;
+                }).map(ctr -> {
+                    if (ctr == 100000) {
+                        try {
+                            Thread.sleep(1000000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    return Mono.empty();
+                }).sequential().blockLast();
+    }
+
+    @Test
     void sendTheCustomerDataContinuously() {
-        Flux.fromStream(() -> IntStream.rangeClosed(0, 10).boxed())
+        Flux.range(1, 10)
                 .delayElements(Duration.ofMillis(10))
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
