@@ -52,29 +52,37 @@ class SenderTest {
 
     @Test
     void fireAndForgetTheCustomerDataContinuously() throws InterruptedException {
-        Thread.sleep(60000);
         CountDownLatch count = new CountDownLatch(1);
-        Flux.range(1, 10000000)
-                .delayElements(Duration.ofMillis(100))
-                .map(counter -> {
+        IntStream.range(1, 10000).boxed()
+                .forEach(counter -> {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     var customer = new Customer(counter, "raj", "raj", addresses);
                     //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
-                    sender.fireAndForget("fnf.customer", customer).publishOn(scheduler).subscribe();
-                    System.out.println("Data sent to server to server : " + customer);
-                    return Mono.empty();
-                }).blockLast();
+                    Mono.just(1)
+                            .map(a -> sender.fireAndForget("fnf.customer", customer).subscribe())
+                            .subscribeOn(scheduler)
+                            .subscribe();
+                    System.out.println("Data sent to server : " + customer);
+                });
         count.await();
     }
 
     @Test
     void fireAndForgetTheCustomerDataContinuouslyInParallelMode() throws InterruptedException {
         CountDownLatch count = new CountDownLatch(1);
-        Flux.range(1, 10)
+        Flux.range(1, 100000)
                 .parallel(4)
                 .runOn(Schedulers.parallel())
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
+                    Mono.just(1)
+                            .map(a -> sender.fireAndForget("fnf.customer", customer).subscribe())
+                            .subscribeOn(scheduler)
+                            .subscribe();
                     System.out.println(Thread.currentThread().getName() + " : Data sent to server : " + customer);
                     return counter;
                 }).sequential().blockLast();

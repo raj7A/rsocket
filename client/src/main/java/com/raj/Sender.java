@@ -7,8 +7,6 @@ import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 import reactor.core.publisher.Mono;
 
-import java.util.concurrent.CountDownLatch;
-
 @Component
 public class Sender {
 
