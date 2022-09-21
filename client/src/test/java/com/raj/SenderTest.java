@@ -15,6 +15,7 @@ import reactor.test.StepVerifier;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SpringBootTest
@@ -35,16 +36,45 @@ class SenderTest {
         customer = new Customer(1, "raj", "raj", addresses);
     }
 
-    @RepeatedTest(2)
+    @RepeatedTest(1)
     void fireAndForgetTheCustomerData() {
         Assertions.assertDoesNotThrow(() ->
                 StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
     }
 
-    @RepeatedTest(2)
+    @RepeatedTest(1)
     void sendTheCustomerData() {
-        Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.send("send.customer", customer)).expectNext("saved")
+        Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.send("send.customer", customer)).expectNext("sent")
                 .verifyComplete());
+    }
+
+    @Test
+    void fireAndForgetTheCustomerDataContinuously() {
+        var counter = new AtomicInteger();
+        Flux.interval(Duration.ofMillis(10))
+                .map(interval -> {
+                    var customer = new Customer(counter.getAndIncrement(), "raj", "raj", addresses);
+                    //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
+                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
+                    System.out.println("Data sent : " + customer);
+                    return Mono.empty();
+                }).blockLast();
+    }
+
+    @Test
+    void fireAndForgetTheCustomerDataContinuouslyInParallelMode() throws InterruptedException {
+        CountDownLatch count = new CountDownLatch(1);
+        Flux.range(1, 10)
+                .parallel(4)
+                .runOn(Schedulers.parallel())
+                .map(counter -> {
+                    var customer = new Customer(counter, "raj", "raj", addresses);
+                    //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
+                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
+                    System.out.println(Thread.currentThread().getName() + " : Data sent : " + customer);
+                    return counter;
+                }).sequential().blockLast();
+        count.await();
     }
 
     @Test
@@ -60,52 +90,8 @@ class SenderTest {
     }
 
     @Test
-    void fireAndForgetTheCustomerDataContinuously() {
-        var counter = new AtomicInteger();
-        Flux.interval(Duration.ofMillis(10))
-                .map(interval -> {
-                    var customer = new Customer(counter.getAndIncrement(), "raj", "raj", addresses);
-                    //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
-                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
-                    System.out.println("Data sent : " + customer);
-                    return Mono.empty();
-                }).map(empty -> {
-                    if (counter.get() == 10) {
-                        try {
-                            Thread.sleep(1000000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    return Mono.empty();
-                }).blockLast();
-    }
-
-    @Test
-    void fireAndForgetTheCustomerDataContinuouslyInParallelMode() {
-        Flux.range(1, 100000)
-                .parallel(2)
-                .runOn(Schedulers.parallel())
-                .map(counter -> {
-                    var customer = new Customer(counter, "raj", "raj", addresses);
-                    //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
-                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
-                    System.out.println(Thread.currentThread().getName() + " : Data sent : " + customer);
-                    return counter;
-                }).map(ctr -> {
-                    if (ctr == 100000) {
-                        try {
-                            Thread.sleep(1000000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    return Mono.empty();
-                }).sequential().blockLast();
-    }
-
-    @Test
-    void sendTheCustomerDataContinuously() {
+    void sendTheCustomerDataContinuously() throws InterruptedException {
+        CountDownLatch count = new CountDownLatch(1);
         Flux.range(1, 10)
                 .delayElements(Duration.ofMillis(10))
                 .map(counter -> {
@@ -114,16 +100,8 @@ class SenderTest {
                     sender.send("send.customer", customer).subscribeOn(scheduler).subscribe();
                     System.out.println("Data sent : " + customer);
                     return counter;
-                }).map(ctr -> {
-                    if (ctr == 10) {
-                        try {
-                            Thread.sleep(1000000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    return Mono.empty();
                 }).blockLast();
+        count.await();
     }
 
     @Test

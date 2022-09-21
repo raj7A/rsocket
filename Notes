@@ -14,3 +14,4 @@ RSocket ->
        https://github.com/rsocket
        https://github.com/joshlong/rsocket-revolution
        https://learnk8s.io/kubernetes-long-lived-connections
+       https://docs.spring.io/spring-framework/docs/current/reference/pdf/rsocket.pdf

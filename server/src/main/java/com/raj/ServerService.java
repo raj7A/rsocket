@@ -25,6 +25,18 @@ public class ServerService {
 
     public Mono<String> send(Customer customer) {
         return webClient.post().uri(URI.create("localhost:3000/content/param1=xyz"))
-                .retrieve().bodyToMono(String.class).onErrorReturn("error");
+                .retrieve().bodyToMono(String.class).onErrorResume(error -> {
+                    System.err.println(error.toString());
+                    return Mono.just("not sent");
+                })
+                .flatMap(response -> {
+                    if (response.equalsIgnoreCase("not sent")) {
+                        System.out.println(response);
+                        return Mono.just(response);
+                    }
+                    System.out.println("sent");
+                    return Mono.just("sent");
+                });
     }
+
 }
