@@ -27,14 +27,14 @@ public class ServerService {
         return webClient.post().uri(URI.create("localhost:3000/content/param1=xyz"))
                 .retrieve().bodyToMono(String.class).onErrorResume(error -> {
                     System.err.println(error.toString());
-                    return Mono.just("not sent");
+                    return Mono.just("not sent : " + customer.getCustomerId());
                 })
                 .flatMap(response -> {
                     if (response.equalsIgnoreCase("not sent")) {
                         System.out.println(response);
                         return Mono.just(response);
                     }
-                    System.out.println("sent");
+                    System.out.println("Data sent to save : " + customer.getCustomerId());
                     return Mono.just("sent");
                 });
     }

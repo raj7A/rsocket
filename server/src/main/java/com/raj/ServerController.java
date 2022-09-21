@@ -36,6 +36,6 @@ public class ServerController {
     @ConnectMapping
     public void connect() {
         //throw new RuntimeException();
-        System.out.println("Client Connected : ");
+        System.out.println("Client Connected");
     }
 }

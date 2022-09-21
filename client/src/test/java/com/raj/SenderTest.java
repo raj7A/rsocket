@@ -15,8 +15,10 @@ import reactor.test.StepVerifier;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 @SpringBootTest
 class SenderTest {
@@ -49,16 +51,19 @@ class SenderTest {
     }
 
     @Test
-    void fireAndForgetTheCustomerDataContinuously() {
-        var counter = new AtomicInteger();
-        Flux.interval(Duration.ofMillis(10))
-                .map(interval -> {
-                    var customer = new Customer(counter.getAndIncrement(), "raj", "raj", addresses);
+    void fireAndForgetTheCustomerDataContinuously() throws InterruptedException {
+        Thread.sleep(60000);
+        CountDownLatch count = new CountDownLatch(1);
+        Flux.range(1, 10000000)
+                .delayElements(Duration.ofMillis(100))
+                .map(counter -> {
+                    var customer = new Customer(counter, "raj", "raj", addresses);
                     //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
-                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
-                    System.out.println("Data sent : " + customer);
+                    sender.fireAndForget("fnf.customer", customer).publishOn(scheduler).subscribe();
+                    System.out.println("Data sent to server to server : " + customer);
                     return Mono.empty();
                 }).blockLast();
+        count.await();
     }
 
     @Test
@@ -69,9 +74,39 @@ class SenderTest {
                 .runOn(Schedulers.parallel())
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
                     sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
-                    System.out.println(Thread.currentThread().getName() + " : Data sent : " + customer);
+                    System.out.println(Thread.currentThread().getName() + " : Data sent to server : " + customer);
+                    return counter;
+                }).sequential().blockLast();
+        count.await();
+    }
+
+    @Test
+    void fireAndForgetTheBulkCustomerDataContinuously() throws InterruptedException {
+        makeCustomerDataBulk();
+        CountDownLatch count = new CountDownLatch(1);
+        Flux.range(1, 100000)
+                .delayElements(Duration.ofMillis(5))
+                .map(counter -> {
+                    var customer = new Customer(counter, "raj", "raj", addresses);
+                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
+                    System.out.println("Data sent to server : " + customer);
+                    return Mono.empty();
+                }).blockLast();
+        count.await();
+    }
+
+    @Test
+    void fireAndForgetTheBulkCustomerDataContinuouslyInParallelMode() throws InterruptedException {
+        makeCustomerDataBulk();
+        CountDownLatch count = new CountDownLatch(1);
+        Flux.range(1, 10000)
+                .parallel(4)
+                .runOn(Schedulers.parallel())
+                .map(counter -> {
+                    var customer = new Customer(counter, "raj", "raj", addresses);
+                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
+                    System.out.println(Thread.currentThread().getName() + " : Data sent to server : " + customer);
                     return counter;
                 }).sequential().blockLast();
         count.await();
@@ -84,7 +119,7 @@ class SenderTest {
             var customer = new Customer(counter.getAndIncrement(), "raj", "raj", addresses);
             sender.fireAndForgetOnConnection1("fnf.customer", customer).subscribeOn(Schedulers.single()).subscribe();
             sender.fireAndForgetOnConnection2("fnf.customer", customer).subscribeOn(Schedulers.single()).subscribe();
-            System.out.println("Data sent : " + customer);
+            System.out.println("Data sent to server : " + customer);
             return Mono.empty();
         }).blockLast();
     }
@@ -96,9 +131,8 @@ class SenderTest {
                 .delayElements(Duration.ofMillis(10))
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
                     sender.send("send.customer", customer).subscribeOn(scheduler).subscribe();
-                    System.out.println("Data sent : " + customer);
+                    System.out.println("Data sent to server : " + customer);
                     return counter;
                 }).blockLast();
         count.await();
@@ -116,6 +150,13 @@ class SenderTest {
             }
             return Mono.empty();
         }).blockLast();
+    }
+
+    private void makeCustomerDataBulk() {
+        IntStream.rangeClosed(1, 4000).boxed().forEach(value -> {
+            // ~ 0.25 MB
+            addresses.add(new Customer.Address(UUID.randomUUID().toString()));
+        });
     }
 
 }
