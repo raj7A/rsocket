@@ -1,6 +1,7 @@
 https://www.manageengine.com/network-monitoring/network-protocols.html
 
 Tcp ->
+       https://kafka.apache.org/protocol
        https://learnk8s.io/kubernetes-long-lived-connections
        https://www.ibm.com/docs/en/aix/7.1?topic=protocol-tcpip-protocols
        https://rsocket.io/about/protocol
@@ -15,3 +16,4 @@ RSocket ->
        https://github.com/joshlong/rsocket-revolution
        https://learnk8s.io/kubernetes-long-lived-connections
        https://docs.spring.io/spring-framework/docs/current/reference/pdf/rsocket.pdf
+       https://www.youtube.com/c/Netifi/videos

@@ -20,7 +20,7 @@ public class ServerController {
     @MessageMapping("fnf.customer")
     public void receive(@Payload Mono<Customer> customerMono, @Headers Map<String, Object> metadata) {
         customerMono.flatMap(customer -> {
-            System.out.println("Data received by fnf : " + customer);
+            System.out.println("Data received by fnf : " + customer.getCustomerId());
             return serverService.send(customer);
         }).subscribe();
     }

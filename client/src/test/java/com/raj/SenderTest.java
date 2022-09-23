@@ -53,39 +53,37 @@ class SenderTest {
     @Test
     void fireAndForgetTheCustomerDataContinuously() throws InterruptedException {
         CountDownLatch count = new CountDownLatch(1);
+
         IntStream.range(1, 10000).boxed()
                 .forEach(counter -> {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(100);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                     var customer = new Customer(counter, "raj", "raj", addresses);
                     //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
-                    Mono.just(1)
-                            .map(a -> sender.fireAndForget("fnf.customer", customer).subscribe())
-                            .subscribeOn(scheduler)
-                            .subscribe();
+                    sender.fireAndForgetSubscribed("fnf.customer", customer);
                     System.out.println("Data sent to server : " + customer);
                 });
+
         count.await();
     }
 
     @Test
     void fireAndForgetTheCustomerDataContinuouslyInParallelMode() throws InterruptedException {
         CountDownLatch count = new CountDownLatch(1);
+
         Flux.range(1, 100000)
                 .parallel(4)
                 .runOn(Schedulers.parallel())
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    Mono.just(1)
-                            .map(a -> sender.fireAndForget("fnf.customer", customer).subscribe())
-                            .subscribeOn(scheduler)
-                            .subscribe();
+                    sender.fireAndForgetSubscribed("fnf.customer", customer);
                     System.out.println(Thread.currentThread().getName() + " : Data sent to server : " + customer);
                     return counter;
                 }).sequential().blockLast();
+
         count.await();
     }
 
@@ -93,14 +91,16 @@ class SenderTest {
     void fireAndForgetTheBulkCustomerDataContinuously() throws InterruptedException {
         makeCustomerDataBulk();
         CountDownLatch count = new CountDownLatch(1);
+
         Flux.range(1, 100000)
                 .delayElements(Duration.ofMillis(5))
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
+                    sender.fireAndForgetSubscribed("fnf.customer", customer);
                     System.out.println("Data sent to server : " + customer);
                     return Mono.empty();
                 }).blockLast();
+
         count.await();
     }
 
@@ -108,25 +108,28 @@ class SenderTest {
     void fireAndForgetTheBulkCustomerDataContinuouslyInParallelMode() throws InterruptedException {
         makeCustomerDataBulk();
         CountDownLatch count = new CountDownLatch(1);
-        Flux.range(1, 10000)
+
+        Flux.range(1, 1000)
                 .parallel(4)
                 .runOn(Schedulers.parallel())
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    sender.fireAndForget("fnf.customer", customer).subscribeOn(scheduler).subscribe();
-                    System.out.println(Thread.currentThread().getName() + " : Data sent to server : " + customer);
+                    sender.fireAndForgetSubscribed("fnf.customer", customer);
+                    System.out.println( " Data sent to server : " + customer.getCustomerId());
                     return counter;
                 }).sequential().blockLast();
+
         count.await();
     }
 
     @Test
     void fireAndForgetTheCustomerDataContinuouslyOnDifferentConnections() {
         AtomicInteger counter = new AtomicInteger();
+
         Flux.interval(Duration.ofMillis(5000)).map(a -> {
             var customer = new Customer(counter.getAndIncrement(), "raj", "raj", addresses);
-            sender.fireAndForgetOnConnection1("fnf.customer", customer).subscribeOn(Schedulers.single()).subscribe();
-            sender.fireAndForgetOnConnection2("fnf.customer", customer).subscribeOn(Schedulers.single()).subscribe();
+            sender.fireAndForgetSubscribed("fnf.customer", customer);
+            sender.fireAndForgetSubscribed("fnf.customer", customer);
             System.out.println("Data sent to server : " + customer);
             return Mono.empty();
         }).blockLast();
@@ -135,6 +138,7 @@ class SenderTest {
     @Test
     void sendTheCustomerDataContinuously() throws InterruptedException {
         CountDownLatch count = new CountDownLatch(1);
+
         Flux.range(1, 10)
                 .delayElements(Duration.ofMillis(10))
                 .map(counter -> {
@@ -143,6 +147,7 @@ class SenderTest {
                     System.out.println("Data sent to server : " + customer);
                     return counter;
                 }).blockLast();
+
         count.await();
     }
 
