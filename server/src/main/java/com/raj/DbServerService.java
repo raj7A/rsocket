@@ -7,21 +7,9 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 
 @Service
-public class ServerService {
+public class DbServerService {
 
-    private static WebClient webClient;
-
-    static {
-        webClient = WebClient.create();
-//        ConnectionProvider connectionProvider = ConnectionProvider.builder("myConnectionPool")
-//                .maxConnections(10000)
-//                .pendingAcquireMaxCount(5000)
-//                .build();
-//        ReactorClientHttpConnector clientHttpConnector = new ReactorClientHttpConnector(HttpClient.create(connectionProvider).keepAlive(true));
-//        webClient = WebClient.builder()
-//                .clientConnector(clientHttpConnector)
-//                .build();
-    }
+    private static final WebClient webClient = WebClient.create();
 
     public Mono<String> send(Customer customer) {
         return webClient.post().uri(URI.create("localhost:3000/content/param1=xyz"))

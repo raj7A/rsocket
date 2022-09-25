@@ -41,7 +41,7 @@ class SenderTest {
     @RepeatedTest(1)
     void fireAndForgetTheCustomerData() {
         Assertions.assertDoesNotThrow(() ->
-                StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
+                StepVerifier.create(sender.fireAndForget("fnf.k.customer", customer)).verifyComplete());
     }
 
     @RepeatedTest(1)
@@ -63,7 +63,7 @@ class SenderTest {
                     }
                     var customer = new Customer(counter, "raj", "raj", addresses);
                     //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
-                    sender.fireAndForgetSubscribed("fnf.customer", customer);
+                    sender.fireAndForgetSubscribed("fnf.k.customer", customer);
                     System.out.println("Data sent to server : " + customer);
                 });
 
@@ -74,12 +74,12 @@ class SenderTest {
     void fireAndForgetTheCustomerDataContinuouslyInParallelMode() throws InterruptedException {
         CountDownLatch count = new CountDownLatch(1);
 
-        Flux.range(1, 100000)
+        Flux.range(1, 10000000)
                 .parallel(4)
                 .runOn(Schedulers.parallel())
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    sender.fireAndForgetSubscribed("fnf.customer", customer);
+                    sender.fireAndForgetSubscribed("fnf.k.customer", customer);
                     System.out.println(Thread.currentThread().getName() + " : Data sent to server : " + customer);
                     return counter;
                 }).sequential().blockLast();
@@ -96,7 +96,7 @@ class SenderTest {
                 .delayElements(Duration.ofMillis(5))
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    sender.fireAndForgetSubscribed("fnf.customer", customer);
+                    sender.fireAndForgetSubscribed("fnf.k.customer", customer);
                     System.out.println("Data sent to server : " + customer);
                     return Mono.empty();
                 }).blockLast();
@@ -114,7 +114,7 @@ class SenderTest {
                 .runOn(Schedulers.parallel())
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    sender.fireAndForgetSubscribed("fnf.customer", customer);
+                    sender.fireAndForgetSubscribed("fnf.k.customer", customer);
                     System.out.println( " Data sent to server : " + customer.getCustomerId());
                     return counter;
                 }).sequential().blockLast();

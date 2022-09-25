@@ -12,16 +12,27 @@ import java.util.Map;
 @Controller
 public class ServerController {
 
-    private final ServerService serverService;
-    public ServerController(ServerService serverService) {
-        this.serverService = serverService;
+    private final DbServerService dbServerService;
+    private final KafkaServerService kafkaServerService;
+    public ServerController(DbServerService dbServerService, KafkaServerService kafkaServerService) {
+        this.dbServerService = dbServerService;
+        this.kafkaServerService = kafkaServerService;
     }
 
     @MessageMapping("fnf.customer")
-    public void receive(@Payload Mono<Customer> customerMono, @Headers Map<String, Object> metadata) {
+    public void dBReceive(@Payload Mono<Customer> customerMono, @Headers Map<String, Object> metadata) {
         customerMono.flatMap(customer -> {
-            System.out.println("Data received by fnf : " + customer.getCustomerId());
-            return serverService.send(customer);
+            System.out.println("Data received by fnf db : " + customer.getCustomerId());
+            return dbServerService.send(customer);
+        }).subscribe();
+    }
+
+    @MessageMapping("fnf.k.customer")
+    public void kafkaReceive(@Payload Mono<Customer> customerMono, @Headers Map<String, Object> metadata) {
+        customerMono.flatMap(customer -> {
+            System.out.println("Data received by fnf kafka : " + customer.getCustomerId());
+            kafkaServerService.send(customer);
+            return Mono.empty();
         }).subscribe();
     }
 
@@ -29,7 +40,7 @@ public class ServerController {
     public Mono<String> receiveAndSave(@Payload Mono<Customer> customerMono, @Headers Map<String, Object> metadata) {
         return customerMono.flatMap(customer -> {
             System.out.println("Data received by send : " + customer);
-            return serverService.send(customer);
+            return dbServerService.send(customer);
         }).flatMap(Mono::just);
     }
 
