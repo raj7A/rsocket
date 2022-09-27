@@ -41,7 +41,7 @@ class SenderTest {
     @RepeatedTest(1)
     void fireAndForgetTheCustomerData() {
         Assertions.assertDoesNotThrow(() ->
-                StepVerifier.create(sender.fireAndForget("fnf.k.customer", customer)).verifyComplete());
+                StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
     }
 
     @RepeatedTest(1)
@@ -54,16 +54,16 @@ class SenderTest {
     void fireAndForgetTheCustomerDataContinuously() throws InterruptedException {
         CountDownLatch count = new CountDownLatch(1);
 
-        IntStream.range(1, 10000).boxed()
+        IntStream.range(1, 20).boxed()
                 .forEach(counter -> {
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(5000);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                     var customer = new Customer(counter, "raj", "raj", addresses);
                     //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
-                    sender.fireAndForgetSubscribed("fnf.k.customer", customer);
+                    sender.fireAndForgetSubscribed("fnf.customer", customer);
                     System.out.println("Data sent to server : " + customer);
                 });
 
@@ -74,12 +74,12 @@ class SenderTest {
     void fireAndForgetTheCustomerDataContinuouslyInParallelMode() throws InterruptedException {
         CountDownLatch count = new CountDownLatch(1);
 
-        Flux.range(1, 10000000)
+        Flux.range(1, 700)
                 .parallel(4)
                 .runOn(Schedulers.parallel())
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    sender.fireAndForgetSubscribed("fnf.k.customer", customer);
+                    sender.fireAndForgetSubscribed("fnf.customer", customer);
                     System.out.println(Thread.currentThread().getName() + " : Data sent to server : " + customer);
                     return counter;
                 }).sequential().blockLast();
