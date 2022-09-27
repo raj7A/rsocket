@@ -41,7 +41,7 @@ class SenderTest {
     @RepeatedTest(1)
     void fireAndForgetTheCustomerData() {
         Assertions.assertDoesNotThrow(() ->
-                StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
+                StepVerifier.create(sender.fireAndForget("fnf.k.customer", customer)).verifyComplete());
     }
 
     @RepeatedTest(1)
@@ -62,8 +62,8 @@ class SenderTest {
                         throw new RuntimeException(e);
                     }
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
-                    sender.fireAndForgetSubscribed("fnf.customer", customer);
+                    //Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.k.customer", customer)).verifyComplete());
+                    sender.fireAndForgetSubscribed("fnf.k.customer", customer);
                     System.out.println("Data sent to server : " + customer);
                 });
 
@@ -79,7 +79,7 @@ class SenderTest {
                 .runOn(Schedulers.parallel())
                 .map(counter -> {
                     var customer = new Customer(counter, "raj", "raj", addresses);
-                    sender.fireAndForgetSubscribed("fnf.customer", customer);
+                    sender.fireAndForgetSubscribed("fnf.k.customer", customer);
                     System.out.println(Thread.currentThread().getName() + " : Data sent to server : " + customer);
                     return counter;
                 }).sequential().blockLast();
@@ -128,8 +128,8 @@ class SenderTest {
 
         Flux.interval(Duration.ofMillis(5000)).map(a -> {
             var customer = new Customer(counter.getAndIncrement(), "raj", "raj", addresses);
-            sender.fireAndForgetSubscribed("fnf.customer", customer);
-            sender.fireAndForgetSubscribed("fnf.customer", customer);
+            sender.fireAndForgetSubscribed("fnf.k.customer", customer);
+            sender.fireAndForgetSubscribed("fnf.k.customer", customer);
             System.out.println("Data sent to server : " + customer);
             return Mono.empty();
         }).blockLast();
@@ -155,9 +155,9 @@ class SenderTest {
     void keepAliveConnectionAfterFireAndForgetTheCustomerData() {
         Flux.interval(Duration.ofMillis(1000)).map(a -> {
             System.out.println("sending data : " + customer);
-            Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.customer", customer)).verifyComplete());
+            Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.k.customer", customer)).verifyComplete());
             try {
-                Thread.sleep(1000000);
+                Thread.sleep(50000000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

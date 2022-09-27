@@ -5,11 +5,11 @@ metadata:
 spec:
   selector:
     app: server
-  type : ClusterIP
+  type : LoadBalancer
   ports:
     - protocol: TCP
-      port: 8099
-      targetPort: 8099
+      port: 9090
+      targetPort: 9090
 ---
 ## --> Deployment configs <-- ##
 apiVersion: apps/v1

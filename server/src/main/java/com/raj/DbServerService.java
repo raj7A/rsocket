@@ -44,7 +44,8 @@ public class DbServerService {
 
     public Mono<String> send(Customer customer) {
         //return webClient.post().uri(URI.create("localhost:3000/content/param1=xyz"))
-        return webClient.get().uri(URI.create("localhost:8080/v1/departments/D102/projects/P1001/employees"))
+        //return webClient.get().uri(URI.create("localhost:8080/v1/departments/D102/projects/P1001/employees"))
+        return webClient.get().uri(URI.create("employee-project-service-service:8080/v1/departments/D102/projects/P1001/employees"))
                 .retrieve().bodyToMono(String.class).onErrorResume(error -> {
                     System.err.println(error.toString());
                     return Mono.just("not sent : " + customer.getCustomerId());

@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:17
 
 ENV MEMORY_OPTS="-XX:-HeapDumpOnOutOfMemoryError \
                  -XX:MaxMetaspaceSize=256m \
@@ -13,5 +13,4 @@ COPY target /target
 
 WORKDIR /target
 
-ENTRYPOINT exec java ${MEMORY_OPTS} ${JAVA_OPTS} \
--jar server-0.0.1-SNAPSHOT.jar
+ENTRYPOINT exec java ${MEMORY_OPTS} ${JAVA_OPTS} -jar server-0.0.1-SNAPSHOT.jar
