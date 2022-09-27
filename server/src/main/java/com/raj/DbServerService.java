@@ -4,11 +4,12 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.HttpProtocol;
+import reactor.netty.http.client.Http2AllocationStrategy;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
 
 import java.net.URI;
-import java.time.Duration;
 
 import static io.netty.channel.ChannelOption.SO_KEEPALIVE;
 
@@ -18,34 +19,38 @@ public class DbServerService {
     private static final WebClient webClient;
 
     static {
-//      webClient = WebClient.create();
+        webClient = http1dot1();
+        //webClient = http2(); // make sure the server is http2 enabled
+    }
+
+    private static WebClient http2() {
+        HttpClient client = HttpClient.create(ConnectionProvider.builder("test")
+                .maxConnections(50)
+                .allocationStrategy(Http2AllocationStrategy.builder().maxConnections(50).build())
+                .build()).protocol(HttpProtocol.H2C);
+        return WebClient.create().mutate()
+                .clientConnector(new ReactorClientHttpConnector(client)).build();
+    }
+
+    private static WebClient http1dot1() {
         ConnectionProvider connectionProvider = ConnectionProvider.builder("myConnectionPool")
-                .maxConnections(500)
-                .maxIdleTime(Duration.ofMillis(120000))
-                .maxLifeTime(Duration.ofMillis(130000))
-                .pendingAcquireMaxCount(1000)
+                .maxConnections(5)
+                //.maxIdleTime(Duration.ofMillis(120000))
+                //.maxLifeTime(Duration.ofMillis(130000))
+                .pendingAcquireMaxCount(20)
                 .build();
-        HttpClient client =  HttpClient.create(connectionProvider)
+        HttpClient client = HttpClient.create(connectionProvider)
                 .option(SO_KEEPALIVE, Boolean.TRUE);
-//      TcpClient tcp = TcpClient.create()
-//                    .option(EpollChannelOption.TCP_KEEPIDLE, 1)
-//                .option(SO_KEEPALIVE, Boolean.TRUE)
-//                .option(EpollChannelOption.TCP_KEEPCNT, 10)
-//                .option(EpollChannelOption.TCP_KEEPINTVL, 2);
-//      HttpClient client =  HttpClient.from(tcp);
-//                .option(SO_LINGER, 10000000)
-//                .option(EpollChannelOption.TCP_KEEPIDLE, 1)
-//                .option(EpollChannelOption.TCP_KEEPCNT, 10)
-//                .option(EpollChannelOption.TCP_KEEPINTVL, 2);
-        webClient = WebClient.builder()
+
+        return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(client))
                 .build();
     }
 
     public Mono<String> send(Customer customer) {
         //return webClient.post().uri(URI.create("localhost:3000/content/param1=xyz"))
-        //return webClient.get().uri(URI.create("localhost:8080/v1/departments/D102/projects/P1001/employees"))
-        return webClient.get().uri(URI.create("employee-project-service-service:8080/v1/departments/D102/projects/P1001/employees"))
+        return webClient.get().uri(URI.create("localhost:8080/v1/departments/D102/projects/P1001/employees"))
+                //return webClient.get().uri(URI.create("employee-project-service-service:8080/v1/departments/D102/projects/P1001/employees"))
                 .retrieve().bodyToMono(String.class).onErrorResume(error -> {
                     System.err.println(error.toString());
                     return Mono.just("not sent : " + customer.getCustomerId());

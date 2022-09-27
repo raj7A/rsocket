@@ -74,7 +74,7 @@ class SenderTest {
     void fireAndForgetTheCustomerDataContinuouslyInParallelMode() throws InterruptedException {
         CountDownLatch count = new CountDownLatch(1);
 
-        Flux.range(1, 700)
+        Flux.range(1, 50)
                 .parallel(4)
                 .runOn(Schedulers.parallel())
                 .map(counter -> {

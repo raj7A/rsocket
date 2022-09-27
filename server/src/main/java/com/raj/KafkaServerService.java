@@ -14,14 +14,15 @@ import reactor.kafka.sender.SenderResult;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class KafkaServerService {
 
     private static final String BOOTSTRAP_SERVERS = "localhost:9092";
     private static final String TOPIC = "cust-topic";
-
     private final KafkaSender<String, String> sender;
+    private static AtomicInteger processed = new AtomicInteger();
 
     public KafkaServerService() {
 
@@ -67,6 +68,7 @@ public class KafkaServerService {
                         return Mono.just(response.exception().getMessage());
                     }
                     System.out.println("Data sent to save : " + customer.getCustomerId());
+                    System.out.println("processed : " + processed.incrementAndGet());
                     return Mono.just("sent");
                 }).subscribe();
     }

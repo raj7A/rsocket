@@ -18,3 +18,11 @@ RSocket ->
        https://learnk8s.io/kubernetes-long-lived-connections
        https://docs.spring.io/spring-framework/docs/current/reference/pdf/rsocket.pdf
        https://www.youtube.com/c/Netifi/videos - https://gitter.im/netifi/general
+
+http2 ->
+       https://lightrun.com/answers/reactor-reactor-netty-http2-slower-then-http1-in-high-volume
+
+cmds ->
+       netstat -tln | grep 8080
+       while true; do sleep 1;echo "=========";netstat -tln | grep 8080; done
+       curl -I --http2 http://localhost:8080/
