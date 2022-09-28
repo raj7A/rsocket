@@ -157,7 +157,7 @@ class SenderTest {
             System.out.println("sending data : " + customer);
             Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.k.customer", customer)).verifyComplete());
             try {
-                Thread.sleep(50000000);
+                Thread.sleep(100000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

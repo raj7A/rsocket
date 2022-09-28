@@ -22,6 +22,7 @@ public class ClientConfig {
                 //.metadataMimeType(MimeType.valueOf("application/cbor"))
                 .rsocketStrategies(rSocketStrategies)
                 .rsocketConnector(connector ->
+                        //connector.keepAlive(Duration.ofSeconds(3), Duration.ofSeconds(10)).
                         connector.reconnect(Retry.fixedDelay(2, Duration.ofSeconds(10))))
                 .tcp("localhost", 9090);
     }
@@ -35,7 +36,8 @@ public class ClientConfig {
                 //.metadataMimeType(MimeType.valueOf("application/cbor"))
                 .rsocketStrategies(rSocketStrategies)
                 .rsocketConnector(connector ->
-                        connector.reconnect(Retry.fixedDelay(20, Duration.ofSeconds(10))))
+                        connector.keepAlive(Duration.ofSeconds(1), Duration.ofSeconds(100))
+                                .reconnect(Retry.fixedDelay(20, Duration.ofSeconds(10))))
                 .tcp("localhost", 9090);
     }
 

@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-service
+spec:
+  selector:
+    app: client
+  type : LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8999
+      targetPort: 8999
+---
+## --> Deployment configs <-- ##
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-deployment
+  labels:
+    app: client
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+        - name: client
+          image: client:0.0.1-SNAPSHOT
+          ports:
+            - containerPort: 8999
+          # will override the variable defined in docker container
+          env:
+            - name: JAVA_OPTS
+              value: "-Dserver.port=8999"
+          # config map configs details
+          volumeMounts:
+            - name: application-config
+              mountPath: "/target/config"
+              readOnly: true
+      volumes:
+        - name: application-config
+          configMap:
+            name: client-config
+---
