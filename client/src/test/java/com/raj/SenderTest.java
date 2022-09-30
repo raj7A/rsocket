@@ -1,9 +1,6 @@
 package com.raj;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Flux;
@@ -45,6 +42,11 @@ class SenderTest {
     }
 
     @RepeatedTest(1)
+    void connectToServer() {
+        Assertions.assertTrue(sender.isConnected());
+    }
+
+    @RepeatedTest(3)
     void sendTheCustomerData() {
         Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.send("send.customer", customer)).expectNext("sent")
                 .verifyComplete());
@@ -153,11 +155,12 @@ class SenderTest {
 
     @Test
     void keepAliveConnectionAfterFireAndForgetTheCustomerData() {
+        //System.out.println("I am conn" + sender.isConnected());
         Flux.interval(Duration.ofMillis(1000)).map(a -> {
             System.out.println("sending data : " + customer);
             Assertions.assertDoesNotThrow(() -> StepVerifier.create(sender.fireAndForget("fnf.k.customer", customer)).verifyComplete());
             try {
-                Thread.sleep(100000);
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

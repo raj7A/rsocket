@@ -26,6 +26,13 @@ public class ServerController {
             return dbServerService.send(customer);
         }).subscribe();
     }
+    @MessageMapping("fnf")
+    public void fnfReceive(@Payload Mono<String> dataMono, @Headers Map<String, Object> metadata) {
+        dataMono.flatMap(data -> {
+            System.out.println("Data received by fnf db : " + data);
+            return Mono.empty();
+        }).subscribe();
+    }
 
     @MessageMapping("fnf.k.customer")
     public void kafkaReceive(@Payload Mono<Customer> customerMono, @Headers Map<String, Object> metadata) {
@@ -42,6 +49,11 @@ public class ServerController {
             System.out.println("Data received by send : " + customer);
             return dbServerService.send(customer);
         }).flatMap(Mono::just);
+    }
+
+    @MessageMapping("connector")
+    public Mono<Boolean> connector() {
+        return Mono.just(Boolean.TRUE);
     }
 
     @ConnectMapping
