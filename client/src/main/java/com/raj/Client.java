@@ -11,12 +11,4 @@ public class Client {
         SpringApplication.run(Client.class, args);
     }
 
-//    @RestController
-//    public class Controller {
-//        @GetMapping("/get")
-//        public void get() {
-//
-//        }
-//    }
-
 }

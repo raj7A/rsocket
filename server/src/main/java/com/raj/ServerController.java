@@ -14,9 +14,11 @@ public class ServerController {
 
     private final DbServerService dbServerService;
     private final KafkaServerService kafkaServerService;
-    public ServerController(DbServerService dbServerService, KafkaServerService kafkaServerService) {
+    private final ReactiveKafkaServerService reactiveKafkaServerService;
+    public ServerController(DbServerService dbServerService, KafkaServerService kafkaServerService, ReactiveKafkaServerService reactiveKafkaServerService) {
         this.dbServerService = dbServerService;
         this.kafkaServerService = kafkaServerService;
+        this.reactiveKafkaServerService = reactiveKafkaServerService;
     }
 
     @MessageMapping("fnf.customer")
@@ -35,10 +37,11 @@ public class ServerController {
     }
 
     @MessageMapping("fnf.k.customer")
-    public void kafkaReceive(@Payload Mono<Customer> customerMono, @Headers Map<String, Object> metadata) {
+    public void kafkaReceive(@Payload Mono<Object> customerMono, @Headers Map<String, Object> metadata) {
         customerMono.flatMap(customer -> {
-            System.out.println("Data received by fnf kafka : " + customer.getCustomerId());
-            kafkaServerService.send(customer);
+            System.out.println("Data received by fnf kafka : " + customer);
+            //kafkaServerService.send(customer);
+            reactiveKafkaServerService.send(customer);
             return Mono.empty();
         }).subscribe();
     }
