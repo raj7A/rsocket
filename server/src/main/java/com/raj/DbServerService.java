@@ -17,9 +17,11 @@ import static io.netty.channel.ChannelOption.SO_KEEPALIVE;
 public class DbServerService {
 
     private static final WebClient webClient;
+    private static final WebClient anotherWebClient;
 
     static {
         webClient = http1dot1();
+        anotherWebClient = http1dot1();
         //webClient = http2(); // make sure the server is http2 enabled
     }
 
@@ -34,7 +36,7 @@ public class DbServerService {
 
     private static WebClient http1dot1() {
         ConnectionProvider connectionProvider = ConnectionProvider.builder("myConnectionPool")
-                .maxConnections(5)
+                .maxConnections(10)
                 //.maxIdleTime(Duration.ofMillis(120000))
                 //.maxLifeTime(Duration.ofMillis(130000))
                 .pendingAcquireMaxCount(20)
@@ -48,8 +50,8 @@ public class DbServerService {
     }
 
     public Mono<String> send(Customer customer) {
-        //return webClient.post().uri(URI.create("localhost:3000/content/param1=xyz"))
-        return webClient.get().uri(URI.create("localhost:8080/v1/departments/D102/projects/P1001/employees"))
+        return webClient.post().uri(URI.create("localhost:3000/content/param1=xyz"))
+        //return webClient.get().uri(URI.create("localhost:8080/v1/departments/D102/projects/P1001/employees"))
                 //return webClient.get().uri(URI.create("employee-project-service-service:8080/v1/departments/D102/projects/P1001/employees"))
                 .retrieve().bodyToMono(String.class).onErrorResume(error -> {
                     System.err.println(error.toString());
@@ -61,6 +63,24 @@ public class DbServerService {
                         return Mono.just(response);
                     }
                     System.out.println("Data sent to save : " + customer.getCustomerId());
+                    return Mono.just("sent");
+                });
+    }
+
+    public Mono<String> sendAnother(String customer) {
+        return anotherWebClient.post().uri(URI.create("localhost:3000/users"))
+        //return webClient.get().uri(URI.create("localhost:8080/v1/departments/D102/projects/P1001/employees"))
+                //return webClient.get().uri(URI.create("employee-project-service-service:8080/v1/departments/D102/projects/P1001/employees"))
+                .retrieve().bodyToMono(String.class).onErrorResume(error -> {
+                    System.err.println(error.toString());
+                    return Mono.just("not sent : " + customer);
+                })
+                .flatMap(response -> {
+                    if (response.equalsIgnoreCase("not sent")) {
+                        System.out.println(response);
+                        return Mono.just(response);
+                    }
+                    System.out.println("Data sent to save : " + customer);
                     return Mono.just("sent");
                 });
     }

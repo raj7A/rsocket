@@ -54,6 +54,17 @@ public class ServerController {
         }).flatMap(Mono::just);
     }
 
+    @MessageMapping("send.customer.doubled")
+    public Mono<String> receiveAndSaveDoubled(@Payload Mono<Customer> customerMono, @Headers Map<String, Object> metadata) {
+        return customerMono.flatMap(customer -> {
+            System.out.println("Data received by send : " + customer);
+            return dbServerService.send(customer);
+        }).flatMap(response -> {
+            System.out.println("Data received by send : " + response);
+            return dbServerService.sendAnother(response);
+        }).flatMap(Mono::just);
+    }
+
     @MessageMapping("connector")
     public Mono<Boolean> connector() {
         return Mono.just(Boolean.TRUE);
