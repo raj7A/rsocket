@@ -7,6 +7,7 @@
         <module>server</module>
 		<module>client</module>
         <module>domain</module>
+        <module>rsocket-client</module>
     </modules>
     <parent>
 		<groupId>org.springframework.boot</groupId>

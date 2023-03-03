@@ -1,0 +1,21 @@
+com:
+  rsocket:
+    rSocketEnabled: true
+    connectOnStart: true
+    host: localhost
+    port: 9090
+    route: default.fnf
+    keepAlive:
+      interval: 120000
+      maxLifeTime: 240000
+    reconnect:
+      retry:
+        maxAttempts: 10
+        fixedDelay: 1000
+spring:
+  rsocket:
+    server:
+      port: 9090 # This will start the RSocket server on the mentioned port
+logging:
+  level:
+    ROOT: INFO
