@@ -49,14 +49,14 @@ https://github.com/rsocket/rsocket-cli
 1. Include the following dependency in the MAIN application's pom.xml file :
 ```
 <dependency>
-  <groupId>com.tesco.ofs</groupId>
+  <groupId>com.abc.ofs</groupId>
   <artifactId>ofs-rsocket-client</artifactId>
   <version>1.0-SNAPSHOT</version>
 </dependency>
 ```
 2. Add below annotation on the applications main class :
 ```
-@SpringBootApplication(scanBasePackages = {"com.tesco.ofs.rsocket"})
+@SpringBootApplication(scanBasePackages = {"com.abc.ofs.rsocket"})
 ```
 3.  **Only if Option2 not working** ,create the following bean in main application end:
 ```
