@@ -1,6 +1,8 @@
 # ofs-rsocket-client :
 
-
+### Modules :
+1. client / domain / server - Proof of concept for RSocket
+2. rsocket-client - An actual prod grade RSocket client
 
 ### Tech Details :
 1. Java 17
